@@ -1,13 +1,13 @@
-import time
+import redis
+import os
 
-cache = {}
-
+redis_host = os.getenv("REDIS_HOST", "localhost")
+redis_port = os.getenv("REDIS_PORT", 6379)
+cache_client = redis.StrictRedis(
+    host=redis_host, port=redis_port, decode_responses=True)
 
 def get(key):
-    if key in cache and cache[key]["expires"] > time.time():
-        return cache[key]["data"]
-    return None
-
+    return cache_client.get(key)
 
 def set(key, value, expiration=600):
-    cache[key] = {"data": value, "expires": time.time() + expiration}
+    cache_client.set(key, value, ex=expiration)
